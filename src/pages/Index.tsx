@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 
 export default function Index() {
   const [cart, setCart] = useState<Record<string, number>>({});
   const [selectedCategory, setSelectedCategory] = useState<string>('Все');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const products = [
     { id: 1, name: 'Молоко 3.2%', price: 89, category: 'Молочные продукты', discount: 10 },
@@ -24,9 +26,10 @@ export default function Index() {
   const cartCount = Object.values(cart).reduce((sum, count) => sum + count, 0);
 
   const categories = ['Все', ...Array.from(new Set(products.map(p => p.category)))];
-  const filteredProducts = selectedCategory === 'Все' 
-    ? products 
-    : products.filter(p => p.category === selectedCategory);
+  
+  const filteredProducts = products
+    .filter(p => selectedCategory === 'Все' || p.category === selectedCategory)
+    .filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <div className="min-h-screen bg-white">
@@ -111,6 +114,19 @@ export default function Index() {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-8">Популярные товары</h2>
           
+          <div className="max-w-md mx-auto mb-8">
+            <div className="relative">
+              <Icon name="Search" size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Поиск товаров..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
           <div className="flex flex-wrap gap-2 justify-center mb-12 max-w-4xl mx-auto">
             {categories.map((category) => (
               <Button
