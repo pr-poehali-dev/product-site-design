@@ -3,12 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
 import Icon from '@/components/ui/icon';
 
 export default function Index() {
   const [cart, setCart] = useState<Record<string, number>>({});
   const [selectedCategory, setSelectedCategory] = useState<string>('Все');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const products = [
     { id: 1, name: 'Молоко 3.2%', price: 89, category: 'Молочные продукты', discount: 10 },
@@ -37,6 +40,16 @@ export default function Index() {
 
   const cartCount = Object.values(cart).reduce((sum, count) => sum + count, 0);
 
+  const cartItems = Object.entries(cart).map(([id, count]) => {
+    const product = products.find(p => p.id === Number(id))!;
+    const finalPrice = product.discount 
+      ? product.price - (product.price * product.discount / 100)
+      : product.price;
+    return { product, count, finalPrice };
+  });
+
+  const totalPrice = cartItems.reduce((sum, item) => sum + item.finalPrice * item.count, 0);
+
   const categories = ['Все', ...Array.from(new Set(products.map(p => p.category)))];
   
   const filteredProducts = products
@@ -64,14 +77,79 @@ export default function Index() {
               <a href="#contacts" className="text-foreground hover:text-primary transition-colors">Контакты</a>
             </nav>
 
-            <Button variant="outline" className="relative">
-              <Icon name="ShoppingCart" size={20} />
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-accent text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
-                  {cartCount}
-                </span>
-              )}
-            </Button>
+            <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="relative">
+                  <Icon name="ShoppingCart" size={20} />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-accent text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">
+                      {cartCount}
+                    </span>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Корзина</SheetTitle>
+                </SheetHeader>
+                
+                {cartItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] text-center">
+                    <Icon name="ShoppingCart" size={64} className="text-gray-300 mb-4" />
+                    <p className="text-muted-foreground">Корзина пуста</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col h-[calc(100vh-120px)]">
+                    <div className="flex-1 overflow-y-auto py-6 space-y-4">
+                      {cartItems.map(({ product, count, finalPrice }) => (
+                        <div key={product.id} className="flex gap-4">
+                          <div className="w-20 h-20 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Icon name="Package" size={32} className="text-gray-300" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold mb-1">{product.name}</h4>
+                            <p className="text-sm text-muted-foreground mb-2">{finalPrice} ₽</p>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                onClick={() => removeFromCart(product.id)}
+                                size="sm"
+                                variant="outline"
+                                className="w-7 h-7 p-0"
+                              >
+                                <Icon name="Minus" size={14} />
+                              </Button>
+                              <span className="font-medium min-w-[24px] text-center">{count}</span>
+                              <Button
+                                onClick={() => addToCart(product.id)}
+                                size="sm"
+                                className="bg-primary hover:bg-primary/90 w-7 h-7 p-0"
+                              >
+                                <Icon name="Plus" size={14} />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">{finalPrice * count} ₽</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <Separator className="my-4" />
+                    
+                    <div className="space-y-4">
+                      <div className="flex justify-between text-lg font-bold">
+                        <span>Итого:</span>
+                        <span>{totalPrice} ₽</span>
+                      </div>
+                      <Button className="w-full bg-primary hover:bg-primary/90" size="lg">
+                        Оформить заказ
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
