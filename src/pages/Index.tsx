@@ -23,6 +23,18 @@ export default function Index() {
     setCart(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
   };
 
+  const removeFromCart = (id: number) => {
+    setCart(prev => {
+      const newCart = { ...prev };
+      if (newCart[id] > 1) {
+        newCart[id] -= 1;
+      } else {
+        delete newCart[id];
+      }
+      return newCart;
+    });
+  };
+
   const cartCount = Object.values(cart).reduce((sum, count) => sum + count, 0);
 
   const categories = ['Все', ...Array.from(new Set(products.map(p => p.category)))];
@@ -170,13 +182,35 @@ export default function Index() {
                           <div className="text-2xl font-bold text-foreground">{product.price} ₽</div>
                         )}
                       </div>
-                      <Button 
-                        onClick={() => addToCart(product.id)}
-                        size="sm"
-                        className="bg-primary hover:bg-primary/90"
-                      >
-                        <Icon name="Plus" size={16} />
-                      </Button>
+                      
+                      {cart[product.id] ? (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() => removeFromCart(product.id)}
+                            size="sm"
+                            variant="outline"
+                            className="w-8 h-8 p-0"
+                          >
+                            <Icon name="Minus" size={16} />
+                          </Button>
+                          <span className="font-semibold min-w-[24px] text-center">{cart[product.id]}</span>
+                          <Button
+                            onClick={() => addToCart(product.id)}
+                            size="sm"
+                            className="bg-primary hover:bg-primary/90 w-8 h-8 p-0"
+                          >
+                            <Icon name="Plus" size={16} />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button 
+                          onClick={() => addToCart(product.id)}
+                          size="sm"
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          <Icon name="Plus" size={16} />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Card>
