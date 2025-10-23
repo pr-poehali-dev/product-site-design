@@ -6,6 +6,7 @@ import Icon from '@/components/ui/icon';
 
 export default function Index() {
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [selectedCategory, setSelectedCategory] = useState<string>('Все');
 
   const products = [
     { id: 1, name: 'Молоко 3.2%', price: 89, category: 'Молочные продукты', discount: 10 },
@@ -21,6 +22,11 @@ export default function Index() {
   };
 
   const cartCount = Object.values(cart).reduce((sum, count) => sum + count, 0);
+
+  const categories = ['Все', ...Array.from(new Set(products.map(p => p.category)))];
+  const filteredProducts = selectedCategory === 'Все' 
+    ? products 
+    : products.filter(p => p.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-white">
@@ -103,9 +109,23 @@ export default function Index() {
 
       <section id="catalog" className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Популярные товары</h2>
+          <h2 className="text-3xl font-bold text-center mb-8">Популярные товары</h2>
+          
+          <div className="flex flex-wrap gap-2 justify-center mb-12 max-w-4xl mx-auto">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                variant={selectedCategory === category ? 'default' : 'outline'}
+                onClick={() => setSelectedCategory(category)}
+                className={selectedCategory === category ? 'bg-primary hover:bg-primary/90' : ''}
+              >
+                {category}
+              </Button>
+            ))}
+          </div>
+
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {products.map((product) => {
+            {filteredProducts.map((product) => {
               const finalPrice = product.discount 
                 ? product.price - (product.price * product.discount / 100)
                 : product.price;
